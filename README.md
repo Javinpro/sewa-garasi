@@ -1,58 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Penyewaan Garasi Kendaraan
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi backend berbasis web (**Laravel + MySQL**) untuk manajemen penyewaan garasi kendaraan (Sepeda, Mobil Bensin, dan Mobil Listrik) yang dibuat untuk memenuhi **Uji Kompetensi Pemrogram** (Skema Sertifikasi: `IMT.01.15/SSK/LSP/IX/2021`).
 
-## About Laravel
+- **Nama Asesi:** Javin Erasmus Clementino
+- **NIM:** 0806022310025
+- **Program Studi:** Informatika — Universitas Ciputra
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur Utama & Aturan Bisnis
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Tipe Garasi & Penomoran Otomatis
+Setiap tipe garasi memiliki kode ID otomatis (*auto-increment*) maksimal **999 unit** per tipe:
 
-## Learning Laravel
+| Tipe Garasi | Kode Internal | Rentang ID | Kendaraan yang Diizinkan |
+| :--- | :--- | :--- | :--- |
+| Garasi Sepeda | `bike` | `S001` - `S999` | Sepeda, Sepeda Motor |
+| Garasi Mobil | `car` | `C001` - `C999` | Mobil Bensin, Mobil Listrik |
+| Garasi Mobil Listrik | `ev_car` | `E001` - `E999` | Mobil Listrik (wajib isi daya penuh) |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Skema Sewa & Harga
+- **Sewa Harian:** Maksimal 30 hari (`harga_harian * jumlah_hari`).
+- **Sewa Bulanan:** Otomatis `25 * harga_harian`.
+- **Mobil Listrik di Garasi EV:** Ditambah biaya pengisian daya hingga penuh (`kapasitas_baterai_kwh * harga_listrik_per_kwh`).
+- **Multi-Sewa:** Satu penyewa dapat menyewa lebih dari satu garasi secara bersamaan.
+- **Status Otomatis:** Setelah transaksi disimpan, status garasi otomatis berubah dari `available` menjadi `used`.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Fitur Berdasarkan Role
+- **Penyewa (`tenant`):** Registrasi akun (NIK 16 digit), Login/Logout, cek daftar garasi tersedia sesuai tipe kendaraan, dan sewa garasi baru dengan upload bukti pelunasan.
+- **Admin (`admin`):** Login/Logout, buat garasi berkelompok, verifikasi pendaftar baru (KTP: `approved`/`rejected`), perpanjang status garasi aktif hari ini dengan upload bukti bayar, dan laporan sewa garasi dengan **4 filter** (per bulan dalam tahun tertentu, per hari dalam bulan tertentu, per tipe garasi, dan per penyewa).
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Teknologi & Library yang Digunakan
+- **PHP 8.2+ & Laravel Framework** — Arsitektur MVC, REST API, validasi request, dan penerapan OOP.
+- **MySQL & Eloquent ORM** — Basis data relasional (5 tabel: `users`, `vehicles`, `garages`, `rentals`, `rental_extensions`) dengan dukungan `DB::transaction`.
+- **Laravel Sanctum** — Autentikasi API berbasis *Bearer Token* dan pemisahan role Admin/Penyewa.
+- **Carbon** — Manipulasi tanggal mulai otomatis, tanggal selesai, dan selisih hari perpanjangan.
+- **PHPUnit** — Pengujian unit otomatis (*automated unit testing*).
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+## Struktur Proyek
+```text
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── AuthController.php        # Registrasi, Login, Logout
+│   │   ├── RentalController.php      # Cek garasi tersedia & transaksi sewa baru
+│   │   └── AdminController.php       # Batch garasi, verifikasi, perpanjangan, laporan
+│   └── Middleware/
+│       └── EnsureUserIsAdmin.php     # Proteksi endpoint khusus Admin
+├── Models/
+│   ├── User.php
+│   ├── Vehicle.php
+│   ├── Garage.php
+│   ├── Rental.php
+│   └── RentalExtension.php
+└── Services/
+    ├── GarageService.php             # Logika pembuatan garasi berkelompok & ID otomatis
+    └── RentalService.php             # Kalkulasi biaya, transaksi sewa, & perpanjangan
+database/
+├── migrations/                       # Migrasi 5 tabel relasional
+├── seeders/DatabaseSeeder.php        # Seeder akun Admin default
+└── schema_mysql.sql                  # Skema SQL alternatif
+docs/
+└── postman_collection.json           # Koleksi Postman untuk uji & demo API
+routes/
+└── api.php                           # Definisi seluruh endpoint REST API
+tests/
+└── Unit/GarageRentalTest.php         # 7 skenario pengujian unit (PHPUnit)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Cara Instalasi & Menjalankan Lokal
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Prasyarat
+- PHP >= 8.2 (ekstensi `pdo_mysql`, `pdo_sqlite`, dan `sqlite3` aktif)
+- Composer
+- MySQL (Laragon / XAMPP / MySQL Server)
 
-## Code of Conduct
+### Langkah-Langkah
+1. **Clone repositori ini dan masuk ke folder proyek:**
+   ```bash
+   git clone https://github.com/USERNAME_ANDA/NAMA_REPO.git
+   cd NAMA_REPO
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+2. **Install dependensi PHP:**
+   ```bash
+   composer install
+   ```
 
-## Security Vulnerabilities
+3. **Salin konfigurasi environment dan generate key:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+4. **Konfigurasi database pada file `.env`:**
+   Buat database kosong bernama `sewa_garasi` di MySQL, lalu sesuaikan `.env`:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=sewa_garasi
+   DB_USERNAME=root
+   DB_PASSWORD=
 
-## License
+   SESSION_DRIVER=file
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+5. **Buat symbolic link storage, jalankan migrasi, dan seeder:**
+   ```bash
+   php artisan storage:link
+   php artisan migrate --seed
+   ```
+   Seeder akan membuat akun Admin default:
+   - **Email:** `admin@garasi.local`
+   - **Password:** `admin12345`
+
+6. **Jalankan server lokal:**
+   ```bash
+   php artisan serve
+   ```
+   API aktif pada `http://127.0.0.1:8000/api`.
+
+---
+
+## Daftar Endpoint API
+
+| Fitur | Role | Method | Endpoint |
+| :--- | :--- | :---: | :--- |
+| Registrasi Penyewa | Publik | `POST` | `/api/register` |
+| Login | Publik | `POST` | `/api/login` |
+| Logout | Auth | `POST` | `/api/logout` |
+| Cek Garasi Tersedia | Penyewa | `GET` | `/api/garages/available?vehicle_type=ev_car` |
+| Sewa Garasi Baru | Penyewa | `POST` | `/api/rentals` (`form-data`) |
+| Buat Garasi Berkelompok | Admin | `POST` | `/api/admin/garages/batch` |
+| Verifikasi Pendaftar Baru | Admin | `PATCH` | `/api/admin/tenants/{user}/verify` |
+| Sewa Aktif Hari Ini | Admin | `GET` | `/api/admin/rentals/active-today` |
+| Perpanjang Status Garasi | Admin | `POST` | `/api/admin/rentals/{rental}/extend` (`form-data`) |
+| Laporan Sewa Garasi | Admin | `GET` | `/api/admin/reports` (`?year=`, `&month=`, `?garage_type=`, `?user_id=`) |
+
+> Koleksi Postman siap pakai tersedia di `docs/postman_collection.json`.
+
+---
+
+## Menjalankan Unit Testing
+Jalankan pengujian unit menggunakan PHPUnit:
+```bash
+php artisan test --filter=GarageRentalTest
+```
+
+Mencakup **7 skenario pengujian** (11 assertions):
+1. Penomoran ID garasi otomatis (`S001`, `S002`, `C001`, `E001`).
+2. Rumus harga sewa bulanan (`25 * harga harian`).
+3. Validasi batas maksimal sewa harian (maks. 30 hari).
+4. Validasi aturan penempatan kendaraan terhadap tipe garasi.
+5. Perhitungan biaya listrik penuh untuk mobil listrik di garasi EV.
+6. Mobil listrik di garasi mobil biasa tanpa biaya listrik tambahan.
+7. Perubahan status garasi otomatis menjadi `used` setelah transaksi disimpan.
