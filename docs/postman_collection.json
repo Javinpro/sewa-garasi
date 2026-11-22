@@ -1,0 +1,148 @@
+{
+  "info": {
+    "name": "Sewa Garasi LSP API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Register Penyewa",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/register",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "{\n  \"nik\": \"3578010101010001\",\n  \"full_name\": \"Budi Santoso\",\n  \"phone\": \"081234567890\",\n  \"email\": \"budi@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "2. Login (Admin / Penyewa)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/login",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "{\n  \"email\": \"admin@garasi.local\",\n  \"password\": \"admin12345\"\n}"
+        }
+      }
+    },
+    {
+      "name": "3. Admin - Buat Garasi Berkelompok",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/admin/garages/batch",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "{\n  \"type\": \"ev_car\",\n  \"count\": 5,\n  \"daily_price\": 100000,\n  \"electricity_price_per_kwh\": 2500\n}"
+        }
+      }
+    },
+    {
+      "name": "4. Admin - Verifikasi Penyewa",
+      "request": {
+        "method": "PATCH",
+        "url": "{{base_url}}/admin/tenants/2/verify",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "{\n  \"status\": \"approved\"\n}"
+        }
+      }
+    },
+    {
+      "name": "5. Penyewa - Cek Garasi Tersedia",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/garages/available?vehicle_type=ev_car",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "6. Admin - Laporan Sewa Garasi",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/admin/reports?year=2026&month=11",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      }
+    }
+  ]
+}

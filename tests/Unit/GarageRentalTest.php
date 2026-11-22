@@ -26,8 +26,7 @@ class GarageRentalTest extends TestCase
         $this->rentalService = new RentalService();
     }
 
-    /** @test */
-    public function it_generates_incremental_garage_ids_correctly()
+    public function test_it_generates_incremental_garage_ids_correctly(): void
     {
         $bikes = $this->garageService->createBatchGarages('bike', 2, 10000);
         $cars = $this->garageService->createBatchGarages('car', 1, 50000);
@@ -39,15 +38,13 @@ class GarageRentalTest extends TestCase
         $this->assertEquals('E001', $evs[0]->id);
     }
 
-    /** @test */
-    public function monthly_price_is_25_times_daily_price()
+    public function test_monthly_price_is_25_times_daily_price(): void
     {
         $garage = new Garage(['type' => 'car', 'daily_price' => 40000]);
         $this->assertEquals(1000000.0, $garage->getMonthlyPrice());
     }
 
-    /** @test */
-    public function daily_rental_cannot_exceed_30_days()
+    public function test_daily_rental_cannot_exceed_30_days(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
@@ -57,8 +54,7 @@ class GarageRentalTest extends TestCase
         $this->rentalService->calculateTotalCost($garage, $vehicle, 'daily', 31);
     }
 
-    /** @test */
-    public function motorcycle_cannot_park_in_car_garage()
+    public function test_motorcycle_cannot_park_in_car_garage(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
@@ -68,8 +64,7 @@ class GarageRentalTest extends TestCase
         $this->rentalService->calculateTotalCost($garage, $vehicle, 'daily', 5);
     }
 
-    /** @test */
-    public function ev_car_in_ev_garage_includes_full_charging_cost()
+    public function test_ev_car_in_ev_garage_includes_full_charging_cost(): void
     {
         $garage = new Garage([
             'type' => 'ev_car',
@@ -86,8 +81,7 @@ class GarageRentalTest extends TestCase
         $this->assertEquals(350000.0, $total);
     }
 
-    /** @test */
-    public function ev_car_in_regular_car_garage_has_no_charging_cost()
+    public function test_ev_car_in_regular_car_garage_has_no_charging_cost(): void
     {
         $garage = new Garage([
             'type' => 'car',
@@ -102,8 +96,7 @@ class GarageRentalTest extends TestCase
         $this->assertEquals(100000.0, $total);
     }
 
-    /** @test */
-    public function creating_rental_marks_garage_status_as_used()
+    public function test_creating_rental_marks_garage_status_as_used(): void
     {
         $user = User::create([
             'nik' => '3578010101010001',
