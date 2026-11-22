@@ -4,7 +4,7 @@ Aplikasi backend berbasis web (**Laravel + MySQL**) untuk manajemen penyewaan ga
 
 - **Nama Asesi:** Javin Erasmus Clementino
 - **NIM:** 0806022310025
-- **Program Studi:** Informatika — Universitas Ciputra
+- **Program Studi:** Informatika (Kampus Kota Makassar) - Universitas Ciputra Surabaya
 
 ---
 
